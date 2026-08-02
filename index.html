@@ -366,3 +366,151 @@
 </body>
 
 </html>
+
+
+
+Qr generator · HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QR Generator · Flavor Haven</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --charcoal:#1a1410;
+    --cream:#fdf6ec;
+    --saffron:#e8a33d;
+    --line:#e8ded0;
+    --muted:#8a7f6f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--charcoal);
+    padding:30px 20px 60px;
+  }
+  .wrap{ max-width:900px; margin:0 auto; }
+  h1{ font-family:'Playfair Display',serif; font-size:26px; margin-bottom:6px; }
+  .sub{ color:var(--muted); font-size:14px; margin-bottom:26px; }
+ 
+  .controls{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    margin-bottom:30px;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .field label{
+    display:block; font-size:12px; text-transform:uppercase;
+    letter-spacing:0.5px; color:var(--muted); margin-bottom:6px;
+  }
+  .field input{
+    padding:9px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    font-size:14px;
+    width:150px;
+  }
+  .field.wide input{ width:320px; }
+  button#generateBtn{
+    background:var(--charcoal);
+    color:var(--cream);
+    border:none;
+    padding:11px 20px;
+    border-radius:8px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+  }
+ 
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+    gap:18px;
+  }
+  .card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px;
+    text-align:center;
+  }
+  .card img{ width:100%; max-width:180px; border-radius:6px; }
+  .card h3{ font-family:'Playfair Display',serif; margin:12px 0 4px; font-size:17px; }
+  .card .url{ font-size:11px; color:var(--muted); word-break:break-all; margin-bottom:10px; }
+  .card a.print-link{ font-size:12px; color:var(--charcoal); text-decoration:underline; }
+ 
+  @media print {
+    .controls, header, .no-print { display:none !important; }
+    .grid{ grid-template-columns:repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+ 
+<div class="wrap">
+  <h1 class="no-print">🍽 Table QR Generator</h1>
+  <p class="sub no-print">Generates one scannable QR code per table. Each code links guests straight to the ordering page for that table.</p>
+ 
+  <div class="controls no-print">
+    <div class="field">
+      <label for="tableCount">Number of tables</label>
+      <input type="number" id="tableCount" value="10" min="1" max="60">
+    </div>
+    <div class="field wide">
+      <label for="baseUrl">Ordering page URL</label>
+      <input type="text" id="baseUrl" value="">
+    </div>
+    <button id="generateBtn">Generate</button>
+    <button id="printBtn" style="background:transparent;color:var(--charcoal);border:1px solid var(--charcoal);padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;">Print</button>
+  </div>
+ 
+  <div class="grid" id="grid"></div>
+</div>
+ 
+<script>
+  const tableCountInput = document.getElementById("tableCount");
+  const baseUrlInput = document.getElementById("baseUrl");
+  const grid = document.getElementById("grid");
+ 
+  // Default to this same site's table-order.html, wherever it's hosted.
+  const defaultBase = window.location.href.replace(/qr-generator\.html.*$/, "table-order.html");
+  baseUrlInput.value = defaultBase;
+ 
+  function generate() {
+    const count = Math.max(1, Math.min(60, parseInt(tableCountInput.value, 10) || 1));
+    const base = baseUrlInput.value.trim() || defaultBase;
+    grid.innerHTML = "";
+ 
+    for (let i = 1; i <= count; i++) {
+      const targetUrl = base + (base.includes("?") ? "&" : "?") + "table=" + i;
+      const qrImgSrc = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(targetUrl);
+ 
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <img src="${qrImgSrc}" alt="QR code for table ${i}" loading="lazy">
+        <h3>Table ${i}</h3>
+        <div class="url">${targetUrl}</div>
+        <a class="print-link no-print" href="${targetUrl}" target="_blank">Open ordering page ↗</a>
+      `;
+      grid.appendChild(card);
+    }
+  }
+ 
+  document.getElementById("generateBtn").addEventListener("click", generate);
+  document.getElementById("printBtn").addEventListener("click", () => window.print());
+ 
+  generate();
+</script>
+ 
+</body>
+</html>
+ 
+
